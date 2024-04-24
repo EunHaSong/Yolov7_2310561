@@ -1,31 +1,13 @@
-# Inference for ONNX model
-
 import cv2
-import tensorflow as tf
-cuda = True
-w = "yolov7-tiny.onnx"
-#img = cv2.imread('horses.jpg')  # image-based execute!
-
-import time
-import requests
-import random
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
-from pathlib import Path
-from collections import OrderedDict,namedtuple
 
-providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider'] #['AzureExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider']
+cuda = True
+w = "yolov7-tiny.onnx"
+
+providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider']
 session = ort.InferenceSession(w, providers=providers)
-
-tf.compat.disable_v2_behavior()
-with tf.compat.Session() as sess:
-    x = tf.compat.placeholder(tf.float32, [2])
-    x2 = tf.square(x)
-    print(sess.run(x2, feed_dict={x: [2, 3]}))
-    # [4. 9.]
-
-#print("00000")
 
 def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleup=True, stride=32):
     # Resize and pad image while meeting stride-multiple constraints
@@ -64,7 +46,7 @@ names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', '
          'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 
          'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 
          'hair drier', 'toothbrush']
-colors = {name:[random.randint(0, 255) for _ in range(3)] for i,name in enumerate(names)}
+colors = {name:[np.random.randint(0, 255) for _ in range(3)] for i,name in enumerate(names)}
 
 webcam = cv2.VideoCapture(0)
 webcam.set(3, 640)
@@ -82,8 +64,6 @@ while webcam.isOpened():
     img = cv2.resize(img, (1280, 720))
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    #cv2.imshow("original",img)
-    
 
     image = img.copy()
     image, ratio, dwdh = letterbox(image, auto=False)
@@ -91,23 +71,16 @@ while webcam.isOpened():
     image = np.expand_dims(image, 0)
     image = np.ascontiguousarray(image)
 
-    #print("11111")
-
     im = image.astype(np.float32)
     im /= 255
-    im.shape
 
     outname = [i.name for i in session.get_outputs()]
-    outname
-
     inname = [i.name for i in session.get_inputs()]
-   # inname
 
     inp = {inname[0]:im}
 
     # ONNX inference
     outputs = session.run(outname, inp)[0]
-    #outputs
 
     ori_images = [img.copy()]
 
@@ -132,15 +105,4 @@ while webcam.isOpened():
     if status:
         cv2.imshow("results",image)
     
-    #if status:
-    #    img=Image.fromarray(ori_images[0])
-    #    img.save('output.png')
-    #    img.show()
-    #    cv2.imshow(img)
-
-    if cv2.waitKey(10) & 0xFF == ord('q'):
-        break
-
-webcam.release()
-cv2.destroyAllWindows()
-
+    if cv2.waitKey(10) & 0xFF
