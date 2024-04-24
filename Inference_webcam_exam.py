@@ -1,3 +1,6 @@
+import tensorflow.compat.v1 as tf  # tf.compat.v1로 수정
+tf.disable_v2_behavior()  # 해당 라인 주석 처리
+
 import cv2
 import numpy as np
 import onnxruntime as ort
@@ -105,4 +108,8 @@ while webcam.isOpened():
     if status:
         cv2.imshow("results",image)
     
-    if cv2.waitKey(10) & 0xFF
+    if cv2.waitKey(10) & 0xFF == ord('q'):
+        break
+
+webcam.release()
+cv2.destroyAllWindows()
